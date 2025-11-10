@@ -1,0 +1,574 @@
+ International Journal of Computer Trends and Technology  
+ 
+                           Volume 69 Issue 9, 27-32, September 2021 
+ISSN: 2231 – 2803 / https://doi.org/10.14445/22312803/IJCTT-V69I9P105                                          © 2021 Seventh Sense Research Group®   
+ This is an open access article under the CC BY-NC-ND license (http://creativecommons.org/licenses/by-nc-nd/4.0/) 
+Original Article 
+Deep Learning for Coffee Disease Classification 
+ 
+Mikias Legesse 
+ 
+Electrical and Computer Engineering, Addis Ababa Science and Technology University (AASTU), Addis Ababa, Ethiopia. 
+ 
+Received Date: 01 September 2021  
+Revised Date:  01 October 2021  
+Accepted Date: 13 October 2021 
+ 
+Abstract - Coffee production in Ethiopia has a long story 
+and is also one of the major agricultural products that 
+exported a huge amount. But coffee production faces 
+different challenges from that widespread coffee diseases 
+result in huge production loss in both quantity and quality. 
+Even if different coffee diseases are still a major challenge, 
+detection and classification of those diseases are performed 
+only by experts, or there is not much technological 
+advancement in this sector. This research aims to apply 
+deep learning methods to overcome the existing problem.      
+A deep learning model was fine-tuned and optimized to 
+detect and classify different coffee diseases to assist farmers 
+in applying appropriate treatment; for this research, 5600 
+images were captured and used for training and testing. 
+And the best-performing model achieves 97% of accuracy. 
+Proper tuning of hyperparameters can prevent overfitting 
+and an appropriate choice of optimizers, resulting in an 
+efficient classifier finally, as future research work indicated 
+applying the model for real-life scenarios. 
+ 
+Keywords - Deep learning, CNN, Plant disease, CBD, 
+CWD, CLR. 
+I. INTRODUCTION 
+As history indicates Coffee plant was first discovered 
+in Ethiopia, and also Ethiopia is one of the largest coffee 
+producers and exporters in the world, mainly for Arabica 
+coffee type. And also, coffee export is a backbone for 
+Ethiopia’s economy, contributing around 20% of annual 
+income [2]. Coffee export also contributes 60% of the 
+annual foreign currency for Ethiopia [1]. 
+ 
+However, due to different reasons, the annual 
+production of coffee is lost many tons of coffee. The 
+occurrence of different widespread diseases of coffee 
+leads to loss both in quantity and quality. And detection 
+and classification of coffee diseases are performed by 
+trained individuals in the laboratory and field inspection. 
+This requires a high level of expertise that local farmers 
+cannot diagnose quickly and accurately. The other thing is 
+this inspection takes much time to cover a large production 
+area. In today’s world, machine learning provides great 
+technological opportunities for different application areas, 
+from self-driving cars to medical image diagnoses and 
+other areas. Also, deep learning is a subclass of machine 
+learning based on an artificial neural network that gives 
+the machine the ability to perform tasks like a human 
+being. The model learns to perform classification directly 
+from the input image, sound, and text in deep learning. 
+And the model shows a remarkable result inaccuracy; 
+sometimes, it achieves a result which exceeds the human 
+level. Now a day’s deep learning grows faster in the 
+computer vision application area due to hardware 
+advancements and a large number of data availability. 
+Nowadays, deep learning provides various solutions for 
+different problems form that many researchers apply deep 
+learning to identify different plant diseases [3]. There are 
+different types of deep learning architecture from that deep 
+belief network (DBN), Deep Neural Network (DNN), 
+Convolutional neural network (CNN), and Recurrent 
+neural network (RNN) are the major ones. 
+A convolutional neural network (CNN) can peak out or 
+detect features (patterns) from images and apply that 
+pattern for a specific task and can be used for different 
+applications like image classification, recognition, and 
+detection. CNN uses a small kernel or filter to extract 
+different features from an input image ranging from low to 
+a high-level set of details. Different researcher uses CNN 
+for detection and classification of plant diseases. And also, 
+for this paper CNN used to detect and classify different 
+coffee diseases which present on Coffee Arabica. in this 
+research VGG19 used and this study contributes an 
+optimized VGG19 model to classify different coffee 
+disease The primary contributions of this work are 
+composed of an optimized VGG19 deep learning model, a 
+dataset for different coffee diseases, and an experimental 
+analysis of hyperparameter setups for the classification. 
+The remaining research section consists of the following: 
+related works and literature, materials and methods, 
+experimental results, conclusions, future work, and 
+references. 
+II. RELATED WORK 
+This section will see some fundamental concepts 
+about convolutional neural networks and plant diseases 
+detection using different CNN architectures. Also, this 
+section presents various recent related works to show the 
+potential contribution of the research work. 
+A. Convolutional Neural Network (CNN) 
+A convolutional neural network (CNN) is one class or 
+type of deep learning algorithm that shows remarkable 
+results in the area of image-based computation like image 
+recognition, classification, and detection, etc. [4]. Adopting 
+a smaller kernel or filter permits the extraction of a wide 
+range of features from a low-level set of details to a high-
+level range of details from an image. The first stage of 
+learning detects Edges, curves, blobs, and other shapes [5]. 
+Mikias Legesse. / IJCTT, 69(9), 27-32, 2021 
+ 
+28 
+Like ANN, a convolutional neural network is inspired   
+by how mammals visualize their environment using the 
+layered architecture of neurons in the brain. These 
+researchers inspired and developed a similar pattern 
+recognition model in computer vision [6]. In the human 
+brain, visual information is processed in the cerebral cortex. 
+In the visual cortex, we have a repetitive field with more 
+complex stimuli for different objects [6]. In CNN, the 
+repetitive field can be described as the region's size in the 
+input that defines the features. 
+ 
+CNN is composed of a convolutional layer, activation 
+layer, and pooling layer. Convolutional layers consist of 
+filters and image maps. And perform a convolutional 
+operation. Filters are a comparatively small matrix that can 
+detect different patterns from the input image. In the 
+convolutional layer filter slide, over the entire input image 
+to extract the feature of the input and pass to the next layers 
+[7]. 
+ 
+The output from the convolution operation generates a 
+feature map from the dot product of the kernel (filter) and 
+the input image. Then the extracted feature map passes 
+through an activation function like ReLU to introduce some 
+non-linearity or reduce a negative value presented on the 
+feature map. And the output of the activation layer feeds to 
+the pooling layer. This layer is used to downsample the 
+feature from the original size. There are different types of 
+pooling functions like max pooling, average pooling, and 
+Sum pooling. And different CNN architecture different 
+types of activation function and pooling function also the 
+number of total layer size differ in each model. After 
+continuous convolution, activation, and pooling layer, the 
+Conv layer's extracted feature passes through the flatten 
+layer. This layer makes the extracted feature   1D then feed 
+to a fully connected layer (FC) in FC by using the selected 
+activation function, and the neural networks create 
+probabilities for classifying the input [8]. 
+ 
+ 
+Fig. 1 Typical CNN Model Structure 
+ 
+B. Convolutional neural network for plant disease 
+classification 
+Kamal KC et al. apply convolutional neural network 
+models and transfer learning techniques to perform 
+automated early plant disease detection and diagnosis 
+using simple images of infected and healthy leaves. And 
+diseased plants have been taken in situ and a controlled 
+environment. They freeze a block of layer instead of 
+individual layers this result in faster-finetuning process 
+and, a different model trained and tested in around 23352 
+images from 28 classes with incorporating of 15 different 
+plants and they select six model’s architecture and finally, 
+they got the best performance of 99.74% by fine-tuning the 
+deep learning model which previously trained by 
+ImageNet [9]. 
+ 
+Vinod Kumar and Hritik Arora et al. use Resnet34 to 
+detect and classify different plant diseases and, 15200 
+images of crop leaves were used during training and 
+testing and also, they compared the proposed model with 
+different machine learning algorithms, and the proposed 
+model got 99.4% of accuracy [10]. 
+Melike Sardogan and et al. apply CNN with low vector 
+quantization to detect and classify tomato diseases 
+presented on the leaf, and their dataset contains 500 
+images of tomato leaf with four classes. And in their 
+research, they use Color information as an active 
+component. In their proposed model, the filters are applied 
+to three channels based on RGB components. The LVQ has 
+been fed with the output feature vector of the convolution 
+part for training the network. The experimental results 
+indicate that the average accuracy in detecting and 
+classifying different tomato diseases is 90% [11]. 
+ 
+Sumathi Bhimavarapu and Panicker J Vinitha apply 
+CNN for plant disease detection and classification. 
+Different scenarios took to capture plant disease. The 
+collected data set consists of 15617 images under 
+restricted cases improvising a training model on CNN with 
+transfer learning. And after training, the proposed model 
+got an accuracy of 98.56% on the considered test vectors 
+providing the required feasibility [12]. 
+ 
+Ishrat Zahan Mukti and Dipayan Biswas propose 
+transfer learning with ResNet50 to classify different types 
+of plant disease. The data set contains 70295 for training, 
+17572 for validation with 38 classes of a plant leaf.  And 
+they use ResNet50 with a transfer learning approach, and 
+also, for comparison purposes, they employ other deep 
+learning models. The proposed model has given the best 
+performance of 99.80% training accuracy [13]. 
+ 
+C. VGG19 Deep Learning Architecture 
+For this research, VGG19 is used to detect and classify 
+different types of coffee diseases. The term VGG comes 
+from the first developer’s visual geometry group at oxford. 
+VGG19 is a very deep convolutional neural network used 
+for image classification VGG19 architecture has 19 layers 
+out of the 19 layers, 16 for convolutional layer, 3 fully 
+connected layers, 5 max-pooling layers, and 1 Softmax 
+layer. The overall the architecture of the VGG19 model is 
+as input layer it accepts 224× 224×3, and as a 
+preprocessing, it subtracts the mean RGB value from each 
+pixel, computed over the whole training set. The first 
+convolution layer applies a filter with the size of 3×3 and 
+Mikias Legesse. / IJCTT, 69(9), 27-32, 2021 
+ 
+29 
+stride of 1 pixel. As a pooling function, it uses  Max 
+pooling with the size of 2×2 pixel with stride 2 as an 
+activation ReLU is used all over the layers. The final layer 
+uses three fully connected layers where two of which have 
+the size of 4096, and the final layer has 1000 classes with 
+activation function of Softmax [14]. 
+Fig. 2 Overall VGG19 Architecture [14] 
+III. MATERIAL AND METHOD 
+This section presents the detailed procedure of how to 
+use CNN for coffee diseases detection and classification. 
+The basic step in the working model flow is described in 
+the figure below. The selected CNN model which is 
+VGG19 start the learning process by accepting input image 
+and followed by simple preprocessing performed in VGG19 
+which is it subtracts the mean RGB value from each pixel 
+value. And the model uses its pre-trained weight of 
+VGG19, and then we perform optimization of model 
+parameters. Then, a test was performed along with model 
+performance analysis using evaluation metrics. 
+ 
+A. Dataset and preprocessing 
+The dataset for this research is around 5600 images of 
+seven different types of coffee diseases. And the dataset 
+was collected from different coffee farms and research 
+centers. The VGG19 model accepts an image with the size 
+of 224x224 so, it resized all input images to 224x224 
+dimensions with a depth of 3. All the images were labeled 
+appropriately and carefully by coffee disease experts to 
+ensure proper labels for classification. The dataset is 
+arranged in training, validation, and testing. The training set 
+is used mainly for feature extraction to train the model. The 
+validation set data takes about ten percent of the whole 
+dataset to provide initial verification of how the model can 
+generalize while on training. Finally, the test dataset is used 
+to justify how the proposed model can generalize for the 
+data it hasn’t seen before or how effective the model can 
+operate in actual scenarios. 
+ 
+ 
+Fig. 3 Image Dataset (A) CWD, (B) CBD, (C) Normal beery, (D) leaf 
+miner, (E) predominant stress 
+ 
+B. Proposed model workflow 
+The general workflow for the proposed model is 
+described in the figure below. 
+ 
+Fig. 4 General Workflow 
+ 
+C. Fine-Tuning 
+To get a model with better accuracy, the model sets to 
+proper tuning towards the desired task. And transfer 
+learning allows any CNN model to maintain the original 
+weights and previously acquired parameters; this is used to 
+deliver efficient results without intense computing power 
+[15]. Fine-tuning is the process of making small 
+modifications to get a more accurate model. And also, 
+setting hyperparameter is a crucial step since it affects the 
+result of the model. 
+D. Hyperparameters 
+In deep learning, hyperparameters have a vital role in 
+the result or outcome of the model since hyperparameters 
+help the model give a significant result. So, Choosing the 
+right values can initially make an enormous difference, 
+making hyperparameter tuning a necessary process. For 
+this research 
+ 
+ 
+Mikias Legesse. / IJCTT, 69(9), 27-32, 2021 
+ 
+30 
+Table 1. Hyperparameter setup 1 
+Hyperparameters 
+Value 
+Number of epochs 
+50 
+Fully connected layer 
+512 
+Dropout rate 
+0.5 
+Batch size 
+16 
+Optimizer 
+SGD 
+Learning rate 
+0.0001 
+ 
+Table 2. Hyperparameter setup 2 
+Hyperparameters 
+Value 
+Number of epochs 
+50 
+Fully connected layer 
+1024 
+Dropout rate 
+0.5 
+Batch size 
+16 
+Optimizer 
+Adam 
+Learning rate 
+0.0001 
+Many epochs, learning rate, dropout rate, batch  size,  
+fully connected layer, and optimizer were used as 
+hyperparameters. Based on these hyperparameters, two 
+options were used for the experimental process. 
+ 
+IV. EXPERIMENTAL RESULT 
+The model starts the training process using a training 
+dataset that contains the original image and some 
+augmented images. Also, in this stage, validation data is 
+provided to measure the performance of the model how it 
+generalizes for new data. Figure 1 indicates that how the 
+model converges during the training and validation stage. 
+And additionally, figure 2 indicates the overall loss of the 
+model in both training and validation. 
+A. Learning curve 
+The learning curve indicates the visual representation 
+of how the model learned and archives what percent of 
+accuracy and loss during each epoch. In this research, 50 
+epochs were used, and Figure 1 illustrates the result for the 
+first hyperparameter configuration, indicating each model’s 
+accuracy with the training and validation sets. The second 
+hyperparameter 
+configuration 
+has 
+suffered 
+a 
+little 
+overfitting problem compared with the first configuration. 
+From the above figures, we can see that the model learning 
+curves for both hyperparameter configurations. In the first 
+configuration, the model achieves mean training accuracy 
+of 99% and 95% of validation accuracy and 8.52% of mean 
+loss, and 15.6% of mean validation loss. And the model 
+with the second configuration obtains 95.41% of training 
+accuracy, 90.1% validation accuracy and 13.6% training 
+loss, and 61.2% validation loss. 
+B. Confusion matrix 
+A confusion matrix is used to describe the overall per- 
+performance 
+of 
+the 
+model 
+by 
+using 
+a 
+tabular 
+representation. To generate confusion matrices, it accepts 
+the label of the test data and compared with predicted 
+output from the model. In this research, 1120 images were 
+used to test the model's performance, and each class had 
+160 images. Then the model was tested using the given 
+image, and its result is presented in the below figure. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Mikias Legesse. / IJCTT, 69(9), 27-32, 2021 
+ 
+31 
+ 
+ 
+Fig.  5 Learning curve 
+ 
+Fig.  6 Confusion matrix 
+ 
+C. Model Performance 
+Table 3 presents the overall model performance for 
+both hyper-parameter configurations. 
+ 
+Table 3. Evaluation matrix 
+Classes 
+Precision 
+Recall 
+F1-score 
+CBD 
+0.987 
+0.975 
+0.981 
+Normal berry 
+1 
+1 
+1 
+Leaf Miner 
+0.917 
+0.900 
+0.900 
+Normal Leaf 
+0.975 
+0.988 
+0.981 
+Leaf Rust 
+0.975 
+0.969 
+0.972 
+Predominant stress 
+0.975 
+0.969 
+0.972 
+CWD 
+0.909 
+0.938 
+0.923 
+Weighted average 
+0.963 
+0.963 
+0.963 
+ 
+D. Discussion 
+With the given two hyperparameter configurations, 
+the proposed model got 97% testing accuracy with the first 
+configuration of hyperparameter, which contains 50 as the 
+number of epochs, 512 fully connected layer, 0.5 dropout 
+rate, 16 batch size, SGD optimizer, and 0.0001 learning 
+rate and with the second configuration which contains 50 
+as the number of epochs, 1024 fully connected layer, 0.5 
+dropout rate, 16 batch size, Adam optimizer and 0.0001 
+learning rate the proposed model achieves 94.8% of 
+testing accuracy. 
+ 
+V. CONCLUSION 
+This research applied deep learning for the detection 
+and classification of different coffee plant diseases. Also, 
+it indicates that the application of CNN toward plant 
+diseases classification. The proposed VGG19 model 
+achieved 97% accuracy with the first hyperparameter 
+configuration. Even with the smaller number of neurons, 
+the optimized VGG19 model became a   lot more efficient 
+with less training time consumed, delivering excellent 
+results. Also, the help of the given set of hyper-parameters 
+significantly 
+increased 
+the 
+generalization 
+for 
+the 
+classification task and prevented cases of overfitting. With 
+this work, a new profound method of diagnosing different 
+coffee plant diseases can now help farmers and farmlands 
+preserve more of their resources for future consumers and 
+the like. 
+ 
+For future works, the proposed model must be 
+implemented for the actual application to help farmers in a 
+particular time of need. Also, the model can deploy for 
+coffee disease classification. This can serve as a real-time 
+monitoring system since the model is MobileNet. It can be 
+deployed in mobile de- vices and explore the potential of 
+automating the application of treatment for coffee plant 
+diseases. 
+ACKNOWLEDGMENT 
+I want to thank my advisor, Dr. Taye Girma, for his 
+continuous support, encouragement, and invaluable 
+comments from the initial stage of the project to the end. 
+And also, I would like to show my gratitude to other 
+persons who helped during the data collection and 
+processing stage. 
+ 
+REFERENCES 
+[1] 
+M. B. Etana, Review on the Management of Coffee Berry Disease 
+(Colletotrichum kahawae) in Ethiopia, Food Science and Quality 
+Management, 76 (2018) 73-76. 
+[2] 
+Eshetu Derso Teame Gebrezgi Girma Adugna Significance of minor 
+diseases of coffea arabica L. in Ethiopia: a review EARO, (2000). 
+[3] 
+D. Oppenheim and G. Shani, Potato Disease Classification Using 
+Con- volution Neural Networks, Advances in Animal Biosciences: 
+Precision Agriculture (ECPA), 8 (2) (2017) 244-249. 
+[4] 
+Liu, Bing, Supervised learning, in Web data mining, Springer, (2011) 
+63-132. 
+[5] 
+Y. LeCun, K. Kavukcuoglu, and C. Farabet, Convolutional networks 
+and applications in vision, Proceedings of 2010 IEEE International 
+Symposium on Circuits and Systems, Paris, (2010) 253-256. 
+[6] 
+D. H. Hubel and T. N. Wiesel, Receptive fields, binocular interaction 
+and functional architecture in the cat’s visual cortex, The Journal of 
+physiology, (1962) 106-154. 
+[7] 
+Le Lu, Yefeng Zheng, Gustavo Carneiro Lin Yang, Deep Learning 
+and convolutional neural networks for medical image computing, 
+Switzer- land: Springer International Publishing, (2017). 
+[8] 
+A. Ng. Convolutional Neural Network. UFLDL. [On- line]. 
+Available: 
+http://ufldl.stanford.edu/tutorial/supervised/ 
+Convolu- 
+tionalNeuralNetwork/ (2018). 
+ 
+ 
+ 
+Mikias Legesse. / IJCTT, 69(9), 27-32, 2021 
+ 
+32 
+[9] 
+Kamal KC, Zhendong Yin y, Bo Li, Bo Ma, Mingyang Wu, transfer 
+learning for fine-grained crop disease classi-Fication based on leaf 
+images, 10th Workshop on Hyperspectral Imaging and Signal 
+Processing: Evolution in Remote Sensing (WHISPERS), (2019). 
+[10] Vinod Kumar Hritik Arora Harsh Jatin Sisodia, ResNet-based 
+approach for Detection and Classification of Plant Leaf Diseases, 
+Proceedings of the International Conference on Electronics and 
+Sustainable Communication Systems, (2020) 495-502. 
+[11] Sardogan, Melike, and Tuncer, Adem and Ozen, Yunus, plant Leaf 
+Disease Detection and Classification Based on CNN with LVQ 
+Algorithm, 3rd International Conference on Computer Science and 
+Engineering (UBMK), (2018) 382-385. 
+ 
+ 
+[12] Bhimavarapu, Sumathi, and Vinitha, Panicker J, Analysis and 
+Characterization of Plant Diseases using Transfer Learning, 2020 
+International Conference on Communication and Signal Processing 
+(ICCSP) (2020) 1293-1296. 
+[13] Ishrat Zahan Mukti and Dipayan Biswas, Transfer Learning Based 
+Plant Diseases Detection Using ResNet50, 2019 4th International 
+Conference 
+on 
+Electrical 
+Information 
+and 
+Communication 
+Technology (EICT), (2019) 1-6. 
+[14] Karen Simonyan and Andrew Zisserman, very deep convo- lutional 
+networks 
+for 
+large-scale 
+image 
+recogni-tion, 
+International 
+Conference on Learning Representations (ICLR), (2015)1-14. 
+[15] Chu, V. Madhavan, O. Beijbom, J. Hoffman, and T. Darrell, Best 
+practices for fine-tuning visual classifiers to new domains, in 
+Proc.Eur. Conf. Comput. Vis., (2016)435–442. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 

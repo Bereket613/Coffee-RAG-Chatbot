@@ -1,0 +1,432 @@
+ © 2021 JETIR October 2021, Volume 8, Issue 10                                                   www.jetir.org (ISSN-2349-5162) 
+JETIR2110156 
+Journal of Emerging Technologies and Innovative Research (JETIR) www.jetir.org 
+b498 
+ 
+ETHIOPIAN COFFEE LEAF DISEASES 
+IDENTIFICATION USING DEEP LEARNING 
+FEATURES 
+1Linigerew Mengstie Shita, 2 Prof. Mogalla Shashi 
+1Email: linigerew2006@gmail.com 
+1M.Tech, AU College of Engineering (A), Department of Information Technology, Visakhapatnam, India 
+2 Professor, AU College of Engineering (A), Department of CS and SE, Visakhapatnam, India 
+ABSTRACT: Coffee is the majorly traded commodity used by one–third of the world’s population as a beverage and 
+Ethiopia is the home land of coffee arabica, it covers 7-10 % of the world’s coffee production. This research work,  
+focuses on the four major types of coffee leaf diseases that reduces coffee production in Ethiopia ,these are brown eye 
+spot (BES),coffee berry disease (CBD),coffee leaf rust (CLR) and coffee wilt disease (CWD).In this paper ,we proposed 
+Ethiopian coffee leaf diseases identification using deep learning features. The images of the coffee leaf diseases were 
+captured from the regions of Ethiopia where more coffee is produced, i.e. Jimma and Zegie. We compared gaussian 
+filtering, median filtering and the hybrid of the two filtering techniques to remove noises from coffee leaf images and 
+we have got better result from the hybrid of the two filtering techniques. And also we applied KMeans clustering for 
+segmentation and CNN for feature extraction. Finally, we made a comparison between CNN-Softmax classifier and 
+CNN-SVM classifier .The experimental results showed that SVM performs better than softmax classifier in terms of 
+performance and computational time. Our proposed model with SVM classifier achieved an overall classification 
+accuracy of 96.5%. 
+Keywords: Ethiopian coffee, SVM, CNN, coffee disease 
+1. INTRODUCTION 
+Coffee is the most important traded commodities next to petroleum and also consumed as a beverage by one third of the 
+world’s population (Yimeru, 2020). Now day’s coffee uses as an input in some food processing industries, for instance 
+it is used as flavoring to various pastries, ice-creams, chocolate, candies (Mengsitu et al, 2016; Aebissa, 2012). ). The 
+genus Coffea consists of over 125 species in the world (Krishnan, 2017). Among all these species only the three species 
+of Coffea are economically important such as Arabica L. (Arabica coffee) presently accounting for about 60% of world 
+trade; C. Canephora  (Robusta coffee), accounting for most of the rest of the trade and C. Liberica  (Liberian coffee) 
+contributing less than one percent (1%) (Waller et al, 2007). 
+ 
+The coffee cultivation sector consists the wider range in the Ethiopian agriculture. Ethiopia is the largest producer of 
+coffee in Sub-Saharan Africa and is the fifth largest coffee producer in the world next to Brazil, Vietnam, Colombia, 
+and Indonesia, contributing about 7-10% of the total world coffee production (Yimeru, 2020; Teferi, 2018; Ayalew, 
+2014,and ICO, 2018). But if we consider only coffee Arabica, Ethiopia is the third largest coffee producer developing 
+country next to Brazil and Colombia. The Ethiopian culture has a greatest dependency on the coffee ceremony and coffee 
+takes a lion share in Ethiopian economy (Yimeru, 2020).  
+© 2021 JETIR October 2021, Volume 8, Issue 10                                                   www.jetir.org (ISSN-2349-5162) 
+JETIR2110156 
+Journal of Emerging Technologies and Innovative Research (JETIR) www.jetir.org 
+b499 
+ 
+Coffee product can be degraded in Ethiopia due to different factors, especially due to coffee plant diseases like Brown 
+Eye Spot (BES), Coffee Berry Disease (CBD), Coffee Leaf Rust (CLR), Coffee Wilt Disease (CWD), etc. Brown Eye 
+Spot (BES is caused by the Cercospora coffeicola fungus. It creates round brown spots on the foliage which develops a 
+gray-brown center with a red-brown margin and may be surrounded by yellow lesions (Sorte et al., 2019). Coffee berry 
+disease (CBD) is a disease caused by the Colletotrichum kahawae fungal pathogen. This diseases develop smaller, water 
+soaked lesions on the young, growing berries that quickly become dark brown or black and slightly sunken (Teferi, 
+2018). Coffee Leaf Rust (CLR) is a fungal disease caused by the fungus called Hemileia vastatrix that demolish the 
+coffee plant at its peak growing levels (Rutherford & Phiri, 2006). The pathogen mostly affects the leaves of the coffee 
+and causes chlorotic lesions or yellow powdery pustules on the underside of the leaves which reduces photosynthetic 
+area of the plant. Coffee Wilt Disease (CWD) is caused by the Fusarium xylarioides fungus (Hindorf & Omondi, 2011; 
+Rutherford & Phiri, 2006). The first symptoms of CWD are yellowing, folding and inward curling of the leaves. Then, 
+the leaves become limped, dry up and turned into brown and ultimately drop off, lastly the trees completely become 
+leafless. 
+ 
+Based on the fact that most of the plant leaves has been used as a source of food for the growing of a plant by the process 
+of photosynthesis, disease in leaf affects the photosynthesis process thereby leading to plant death (Arivazhagan&Ligi, 
+2018).  A timely and accurate identification of plant diseases plays an important role in preventing the loss of 
+productivity of agricultural products (TURKOGL& HANBAY, 2019). The oldest system for identification of plant 
+diseases was time consuming, ineffective, and expensive and labor intensive and error prone (Arivazhagan&Ligi, 2018 
+and Alemayehu, 2017). 
+Now a day’s, the use of modern technologies in the agriculture industry have an important contribution to help 
+agricultural experts. One of the emerging technologies is the use of image processing or computer vision for the 
+identification of different plant diseases.  
+ 
+Image based disease analysis approach has much importance over the traditional one because of its effectiveness, 
+efficiency and non-subjectivity. Image processing is the technique which is used for measuring affected area of disease, 
+and to determine the difference in the color of the affected area. 
+The deep learning approach clearly the Convolutional Neural Network (CNN) is an outstanding tool for resolving 
+computer vision problems for a variety number of application areas. CNN is does not required hand-crafted feature 
+extraction (Yamashita et al., 2018) because it performs both feature extraction and classification by itself 
+(Arivazhagan&Ligi,2018  ) and also it has a great ability to extract robust and high-level features due to its multiple 
+convolution and pooling layers. 
+ 
+2. LITERATURE REVIEW 
+Image processing technique plays a vital role in the area of agricultural industry to diagnosis plant diseases 
+at different stages of production. Now a day’s, deep CNN approaches, becomes the most powerful machine 
+learning technique in image processing. The authors (TUROGLU&HANBAY, 2019), proposed automatic 
+plant diseases and pest detection using deep learning features. They were used transfer learning and deep 
+feature extraction methods. The extracted features using deep learning are classified by support vector 
+machine (SVM), extreme learning machine (ELM) and K-nearest neighbor (KNN) classification methods. 
+Finally, the authors concluded that the CNN feature extraction with support vector machine (SVM) 
+classification gives better results than transfer learning methods. 
+ 
+The paper studied by (Jadhav et al., 2020), presented an automated system for identifying the soybean 
+diseases using a transfer learning approaches for the pre-trained deep learning AlexNet and GoogleNet 
+classification. In this research work, the authors modified the last three layers of the GoogleNet and make 
+modifications on some CNN parameters like learning rate, number of epochs and the number of iterations 
+to enhance the classification performance. Finally, the authors used fivefold-cross validation methods for 
+evaluating the performance of the classifier and they achieved an accuracy of 98.75% and 96.25% for 
+GoogleNet and AlexNet respectively. The work done by (Arivazhagan & Ligi, 2018), proposed an 
+automated mango leaf diseases identification using deep learning based approach. In this research work, 
+the authors applied CNN for both feature extraction and classification. Finally they achieved an overall 
+accuracy of 96.67% for identifying the mango leaf diseases. 
+© 2021 JETIR October 2021, Volume 8, Issue 10                                                   www.jetir.org (ISSN-2349-5162) 
+JETIR2110156 
+Journal of Emerging Technologies and Innovative Research (JETIR) www.jetir.org 
+b500 
+ 
+The research work done by (Yimeru ,2020),  the author developed automatic identification of diseases and pest damage 
+from the leaf and berry parts of the coffee plant using image processing and machine learning. The author used two 
+color space (such as L*a*b and YCbCr color spaces) and texture filter segmentation algorithm .He was applied 
+feedforward artificial neural network (ANN) to classify coffee plant diseases and pests. ANN result was compared to 
+the results obtained from support vector machine and K-nearest neighbor classification algorithms. Finally, ANN 
+performed better performance and achieved an overall classification accuracy of 91.9%. In (Sorte et al, 2019), the 
+authors proposed an automatic coffee plant diseases recognition system for Cercospora (brown eye sport) and coffee 
+leaf rust diseases. They were used two texture attribute extraction approaches GLCM and LBP and also the texture 
+vector computed for a set of images and used as an input for the feed forward neural network. The results compared to 
+the recognition rate of CNN without extraction of texture attributes. At the end, the CNN approach showed better 
+results than texture extraction methods with sufficient training dataset samples. 
+The authors Manso et al., (2019)  have been developed a mobile phone system (App) to detect and classify the coffee 
+leaf rust and coffee leaf miner and automatically identify or calculate the degree of severity. They applied k-means 
+clustering, Otsu Algorithm, and iterative threshold algorithm over the two color spaces (such as HSV and YCbCr color 
+spaces) for segmenting the diseases and pests from the healthy parts of the coffee leaves. They trained the model using 
+artificial neural network (ANN), Back propagation neural network (BPNN) and Extreme learning machine (ELM). 
+Finally, the results of ELM is slightly better than ANN and BPNN. Vassallo-Barco et al., (2019) presented automatic 
+identification of nutritional deficiencies for Calcium (Ca), Iron (Fe), Boron (B), and potassium (K) using shape and 
+texture descriptors in images of coffee plant leaves. The authors used Otsu’s method of segmentation and Blurred 
+Shape Method (BSM) with Gray-level Co-occurrence matrix (GCM) feature extraction. Then extracted features 
+classified using KNN, Naïve Bayes and Neural network classification algorithms. Finally, they obtained good accuracy 
+associated with Boron (B) and Iron (Fe) deficiencies but they got poor results for Calcium (Ca) and Potassium (K) 
+deficiencies. 
+The authors (Mengsitu et al., 2016), proposed automatic identification of the three major Ethiopian coffee leaf diseases 
+using image processing. They used five different segmentation techniques such as Otsu, K-means, Gaussian 
+distribution, FCM and the combination of Gaussian distribution and K-means clustering. The authors applied Gray-
+level co-occurrence matrix (GLCM) and color features for extracting features from Ethiopian coffee leaves but they 
+used traditional features like color, shape and texture, these features gives poor performance when used alone 
+(TUROGLU&HANBAY, 2019). And they trained the model using artificial neural network (ANN), Naïve Bayes and 
+SOM and RBF. Finally, the combination of Gaussian distribution and K-means clustering with the hybrid of SOM and 
+RBF classification methods gives better accuracy of 92.10%.
+3. STATEMENT OF PROBLEM 
+ 
+Agriculture is the most important economic activity in Ethiopia and one of the most important agricultural exports are 
+coffee crop products. But Coffee production is constrained by many factors, including losses due to damage caused by 
+diseases like brown eye spot (BES), coffee berry diseases (CBD), coffee leaf rest (CLR), coffee wilt diseases 
+(CWD),and others. The methods of coffee diseases identification in Ethiopia is through a traditional inspection and 
+previous experiences which are subjective and non-efficient (Aycheh, 2008). The advanced solution is automating the 
+diseases identification and classification process using different algorithms or approaches. There are previous studies 
+on plant diseases recognition and identification technique using imaging and machine learning including coffee plants. 
+ 
+The paper studied by (Mengsitu et al., 2016), the authors proposed automatic identification of the three major Ethiopian 
+coffee plant diseases but they used a traditional feature extraction methods such as color, shape and texture features. 
+These traditional methods had very low performance when used alone (TURKOGL& HANBAY, 2019). Deep learning 
+features have better performance over traditional feature extraction methods. This study will try to address the 
+following questions: 
+ 
+Which preprocessing technique is suitable for Ethiopian coffee plant diseases identification? 
+ 
+Which classification Algorithm is suitable for Ethiopian coffee plant diseases classification? 
+ 
+ 
+ 
+ 
+© 2021 JETIR October 2021, Volume 8, Issue 10                                                   www.jetir.org (ISSN-2349-5162) 
+JETIR2110156 
+Journal of Emerging Technologies and Innovative Research (JETIR) www.jetir.org 
+b501 
+ 
+4. EXPERIMENTATION 
+4.1. Materials and Tools 
+For collecting images of Ethiopian coffee leaf images, we used Redmi note 6 pro smart phones. When we capture the 
+Ethiopian coffee leaf images, we fix the smartphone on a stand to reduce hand movement and helps to capture uniform 
+images of Ethiopian coffee leaves. The Research work done by (Mengsitu et al., 2016 ), we captured the Ethiopian 
+coffee leaf image at a distance of 130mm from the coffee plant up to the smartphone camera for better coffee plant 
+image quality. The required Ethiopian coffee images are collected from the most coffee producer regions of Ethiopia 
+i.e. from Jimma and Zegie. The labeling process is done by experts found in vegetable and fruit health clinic in Amhara 
+region, because of some of the diseases looks similar depending on the infection status. 
+4.2. Implementation tools 
+4.2.1. Programming Language 
+We used python programming language for our research work. Python is an open source and the most powerful 
+programming language for image processing or computer visions. 
+4.2.2. Development Tools 
+Experimentation was carried out on the keras prototype with Tensorflow backend on window’s 10 pro operating system 
+with Intel(R) Core(TM) i3, 4GB RAM and    2.40 GHz processor. 
+ 
+4.3. Design Of Coffee Image Identification Model 
+The proposed model architecture for Ethiopian coffee leaf diseases identification consists of a series of steps; namely 
+image acquisition, preprocessing, segmentation, feature extraction and identification (classification). The architecture 
+for the proposed model is graphically represented in figure 1 below. The first step in any image processing system is 
+image acquisition. As shown in figure 1, there are two phases; the training phase and the testing phase. The training 
+phase starts before the testing phase to train the proposed model whereas the testing phase follows the preceding 
+training phase to evaluate the trained model performances by giving new dataset image. The proposed model starts by 
+taking the whole Ethiopian coffee leaf image dataset for preprocessing. In preprocessing step, image resizing, noise 
+removal by using gaussian filtering, median filtering and the combination of gaussian filtering and median filtering is 
+applied  to select the best filtering technique. After preprocessing, the next step is image augmentation. Image 
+augmentation helps to prevent overfitting by increasing the number coffee leaf images, and then splitting the 
+augmented coffee leaf image dataset into 80% train dataset and 20% test dataset. These train dataset and test dataset 
+are segmented parallelly using KMeans clustering segmentation methods. The next major task is feature extraction, 
+extracting useful information from the segmented coffee dataset for both train and test data using CNN. CNN mainly 
+composed of three layers, these are Convolution layer, pooling layer and fully connected layers .The convolution and 
+pooling layer used for feature extraction and the fully connected layer is used for classification .Finally, the extracted 
+features from the train dataset feed into the Softmax and SVM classifier to train the model and then the extracted 
+features from the test dataset feed into the previously trained Softmax and SVM classifier. 
+© 2021 JETIR October 2021, Volume 8, Issue 10                                                   www.jetir.org (ISSN-2349-5162) 
+JETIR2110156 
+Journal of Emerging Technologies and Innovative Research (JETIR) www.jetir.org 
+b502 
+ 
+ 
+ 
+Figure 1 .The proposed model architecture 
+ 
+4.3.1. Convolutional Neural Network(CNN) 
+ 
+CNN is a feedforward multilayered hierarchical neural network which has shown good performance on different 
+competitions related to Computer Vision and Image Processing (Khan et al.,2020). The most crucial attributes of the 
+CNN are hierarchical learning, automatic feature extraction, multi-tasking, and weight sharing (Khan et al., 2020). A 
+typical CNN architecture composed of repetitions of a stack of numerous convolution layers and a pooling layer, 
+followed by one or more fully connected layers existing in between input and output layers (Yamashita et al., 2018, 
+Sultana et al., 2018). 
+ 
+The Convolution and pooling layer of a CNN are helps to extract useful features from an input image, and the fully 
+connected layers are receive the extracted features from all previous neurons as input to map them in to the output 
+layer. In addition to the core CNN layers, batch normalization and dropout are also incorporated to enhance CNN 
+performance. In this paper, we have used three convolution layer, three pooling layer and two fully connected layers. 
+The last fully connected layer is the same as the class labels. To solve the problem of overfitting in our CNN model, 
+we used Dropout layer below each Maxpooling layers and also we used on the first fully connected layer. 
+The convolution layer is the basic layer of CNN that performs convolution operation. It extracts meaningful features 
+from an input image. We have used 96, 64, and 32 number of filters sizes and a 5x5 and 3x3 kernel size to extract 
+features from coffee leaf image. The pooling layer is another layer of CNN that performs down sampling operations. 
+This layer takes the convolutional output as an input and subsamples it to reduce the in-plane dimensionality of the 
+feature maps (input images), number of parameters and the computational complexity of the model. We used 2x2 pool 
+size for the first two pooling layers and a 3x3 pool size for the last pooling layer.  
+ 
+© 2021 JETIR October 2021, Volume 8, Issue 10                                                   www.jetir.org (ISSN-2349-5162) 
+JETIR2110156 
+Journal of Emerging Technologies and Innovative Research (JETIR) www.jetir.org 
+b503 
+ 
+Activation function is a non-linearity mapping operation that helps to accelerate the learning process of our CNN 
+model. We have used the Rectified Linear Unit (ReLU) non-linearity activation function. ReLU is the most common 
+and more efficient non-linearity activation function than sigmod or hyperbolic activation functions (Sorte et al., 2019). 
+Dropout is the mechanism of preventing or reducing overfitting on the training dataset by randomly skipping some 
+units or connections. We used a dropout layer after each Maxpooling layer and also after the flatten layers with a 
+dropping probability of 0.25 for the first two dropout layer and we used 0.3 dropping probability for the rest layers. 
+Batch Normalization is a normalization technique used to speed up the learning process of the CNN by controlling the 
+change in the distribution of the hidden layer values by setting a learning rate to small values for minimizing the 
+convergence time (Khan et al., 2020). 
+ 
+ 
+Figure 2. The proposed CNN model architecture 
+5. RESULTS 
+5.1. The proposed CNN model Experimental results using Softmax Classifier 
+ 
+In this experiment, we divide the total coffee image dataset into three various sets, train set, test set and validation set. 
+Primarily, we partitioned the whole coffee image dataset into 80/20 for training phase and test phase respectively. After 
+these, again we divide the 80% training phase dataset into 80/20 for training and validation. Finally, we have got 1280 
+coffee images (320 images for each class) for training, 320 coffee images (80 images for each class) for validation and 
+400 coffee images (100 coffee images for each class) for testing. We trained the model for 20 epochs, batch size of 32, 
+and an initial learning rate of 0.001 (1e-3).We perform three experiments with the end to end CNN for comparing the 
+three filtering techniques. 
+ 
+ 
+ 
+ 
+ 
+© 2021 JETIR October 2021, Volume 8, Issue 10                                                   www.jetir.org (ISSN-2349-5162) 
+JETIR2110156 
+Journal of Emerging Technologies and Innovative Research (JETIR) www.jetir.org 
+b504 
+ 
+5.1.1. Comparison between noise filtering techniques 
+In this sub section, we made three experiments for choosing the best preprocessing techniques. We compared Gaussian 
+Filtering (GF), Median Filtering (MF) and the hybrid of the two (GF-MF) filtering techniques using the proposed end 
+to end CNN model .We have got experimental results of  92.5%, 90.5% and 95.75% accuracy for  the GF, MF and 
+GF-MF filtering techniques respectively. The GF-MF filtering technique is better than the two individual techniques 
+because it gains the advantages of GF filtering for removing the gaussian noises and the advantages of MF filtering for 
+removing the Salt and pepper noises. Therefore, we have used GF-MF filtering for the rest of our experiment. 
+Table 1.  Comparison between noise filtering techniques 
+ 
+Experiment number 
+  
+Type of filtering 
+techniques used 
+ 
+Accuracy in 
+(percentage) 
+ 
+Experiment 1 
+ 
+GF 
+ 
+92.5% 
+ 
+Experiment 2 
+ 
+MF 
+ 
+90.5% 
+ 
+Experiment 3 
+ 
+GF-MF 
+ 
+95.75% 
+ 
+5.1.2. Performance of the proposed CNN model 
+ 
+In this sub section, we made an experiment for measuring the training, validation and testing accuracy of the proposed 
+CNN model. This experiment is done using the combination of GF-MF filtering techniques. We trained the proposed 
+CNN with 1280 training coffee images and 320 validation coffee images, and we test the trained model with 400 coffee 
+images. The model validation is done at the end of each epochs while the model trains every time per epoch. Finally, 
+at the end of the last epochs (epochs 20), our CNN model achieved a training accuracy of 98.25%, validation accuracy 
+of 96.88% and testing accuracy of 95.75%.  
+ 
+ 
+Figure 3. The precision, recall and f1_score of the end to end CNN 
+ 
+© 2021 JETIR October 2021, Volume 8, Issue 10                                                   www.jetir.org (ISSN-2349-5162) 
+JETIR2110156 
+Journal of Emerging Technologies and Innovative Research (JETIR) www.jetir.org 
+b505 
+ 
+ 
+ 
+Figure 4. Confusion matrix of the testing performance of our  CNN model using softmax classifier 
+ 
+5.2. Experimental results using SVM Classifier 
+The total time taken to train the proposed CNN model using Softmax classifier is around 6 hours approximately 950 
+seconds per epoch. So, using CNN for the classification takes huge computational time. As a result, we need to use the 
+SVM Classifier after the flatten layers of the proposed CNN model architecture. We used radial basis function (rbf) 
+kernel function to use SVM classifier in our multiclass classification.  
+In this experiment, we have used the proposed CNN for feature extraction and SVM for classification and we have 
+achieved 96.5 % accuracy. This accuracy is greater than the proposed CNN model with Softmax classifier by 0.75 %. 
+The CNN-SVM model takes less processing time compared with the CNN-Softmax model. The precision, recall, f1-
+score and confusion matrix for this experiment is presented in Figure 5 and 6 respectively. 
+ 
+Figure 5. The precision, recall, and f1-score of the proposed CNN with SVM classifier 
+© 2021 JETIR October 2021, Volume 8, Issue 10                                                   www.jetir.org (ISSN-2349-5162) 
+JETIR2110156 
+Journal of Emerging Technologies and Innovative Research (JETIR) www.jetir.org 
+b506 
+ 
+ 
+Figure 6. The confusion matrix of the proposed CNN model with SVM classifier 
+Table 2. Comparison between Softmax and Support Vector Machine (SVM) classifier 
+ 
+Feature extraction 
+ 
+Classifier 
+ 
+Accuracy 
+ 
+Computational 
+time 
+CNN 
+Softmax 
+95.75% 
+6 hrs. 
+CNN 
+SVM 
+96.5% 
+Max. ½ hrs. 
+6. CONCLUSION AND FUTURE WORK 
+Coffee is the majorly traded commodity used by one –third of the world’s population as a beverage. Coffee is the 
+backbone of the Ethiopian economy that covers 7-10% of the world’s coffee production, and it is the first exported 
+commodity in Ethiopia. To maximize the revenues from the sales of coffee crops, the major hazards or treats that 
+hinder its production (i.e. coffee diseases) should be controlled. 
+Coffee disease is the major treats that affects the quality and quantity of coffee production in Ethiopia. Some of the 
+most common coffee diseases that cause damage to coffee production are brown eyespot (BES), coffee berry diseases 
+(CBD), coffee leaf rust (CLR) and coffee wilt diseases (CWD). In order to control the damages caused by these 
+diseases, an accurate and timely diagnosis and identification of the diseases type is very important. The main objective 
+of this thesis work is to develop an automated Ethiopian coffee leaf diseases identification via image processing and 
+deep learning features. For this study, we proposed a model architecture that encompasses preprocessing, 
+segmentation, feature extraction, and identification phases. 
+The preprocessing phase reduces the size of the input coffee image into 244x244 and removed noises from the coffee 
+image using GF, MF and the combination of GF-MF filtering techniques. Then GF-MF filtering performs better than 
+GF and MF filtering techniques. In the segmentation phase, we used KMeans clustering segmentation algorithm to 
+outline the damaged regions of coffee leaves. 
+The third phases of the proposed model architecture is feature extraction. We used CNN feature extraction to extract 
+high-level features from the segmented coffee images and stored these features as a feature set in the database. After 
+feature extraction, the classification phase is built using softmax and SVM classifier. The experimental results showed 
+that the proposed CNN feature extraction model with SVM classifier performs better than softmax classifiers and 
+achieved an overall classification accuracy of 96.5%. This study focuses only on the leaf parts of the coffee plant 
+© 2021 JETIR October 2021, Volume 8, Issue 10                                                   www.jetir.org (ISSN-2349-5162) 
+JETIR2110156 
+Journal of Emerging Technologies and Innovative Research (JETIR) www.jetir.org 
+b507 
+ 
+diseases. We recommend for future studies can extend this research work by incorporating additional classes (roots, 
+stems) and new feature extraction and classification machine learning algorithms. 
+7. References 
+Alemayehu Hiwot Desta.” Development of Automatic Sesame Grain Classification and Grading System Using Image 
+Processing Techniques” Addis Ababa University (2017) 
+Arivazhagan, S., & Ligi, S. V. (2018). Mango leaf diseases identification using convolutional neural network. Int. J. 
+Pure Appl. Math, 120(6), 11067-11079. 
+Ayalew, T. "Characterization of organic coffee production, certification and marketing system: Ethiopia as a main 
+indicator: a review." Asian Journal of Agriculture Research 8.4 (2014): 170-180. 
+Aycheh, Habtamu Minassie. "Image analysis for Ethiopian coffee classification." Addis Ababa University (2008). 
+Hindorf, H., & Omondi, C. O. (2011). A review of three major fungal diseases of Coffea arabica L. in the rainforests 
+of Ethiopia and progress in breeding for resistance in Kenya. Journal of Advanced Research, 2(2), 109–120. 
+doi:10.1016/j.jare.2010.08.006 
+ICO. (2018). Coffee market report: December 2018. 1–8. http://www.ico.org/Market- Report-18-19-e.asp 
+Jadhav, S. B., Udupi, V. R., & Patil, S. B. (2020). Identification of plant diseases using convolutional neural 
+networks. International Journal of Information Technology, 1-10. 
+Khan, A., Sohail, A., Zahoora, U. et al. A survey of the recent architectures of deep convolutional neural networks. 
+Artif Intell Rev 53, 5455–5516 (2020). https://doi.org/10.1007/s10462-020-09825 
+ 
+Manso, G. L., Knidel, H., Krohling, R. A., & Ventura, J. A. (2019). A smartphone application to detection and 
+classification of coffee leaf miner and coffee leaf rust. arXiv preprint arXiv:1904.00742. 
+Mengistu, A. D., Mengistu, S. G., & Alemayehu, D. M. (2016). Image analysis for Ethiopian coffee plant diseases 
+identification. International Journal of Biometrics and Bioinformatics (IJBB), 10(1), 1. 
+Rutherford, Mike A., and Noah Phiri. "Pests and diseases of coffee in Eastern Africa: A technical and advisory 
+manual." Wallingford, UK: CAB International (2006). 
+Soni, H., & Sankhe, D. (2019). Image Restoration using Adaptive Median Filtering. Image, 6(10). 
+Sorte, L. X. B., Ferraz, C. T., Fambrini, F., dos Reis Goulart, R., & Saito, J. H. (2019). Coffee leaf disease recognition 
+based on deep learning and texture attributes. Procedia Computer Science, 159, 135-144. 
+Sultana, F., Sufian, A., & Dutta, P. (2018, November). Advancements in image classification using convolutional 
+neural network. In 2018 Fourth International Conference on Research in Computational Intelligence and 
+Communication Networks (ICRCICN) (pp. 122-129). IEEE. 
+Teferi Demelash (2018). Status of Major Coffee Diseases of Coffea Arabica L. in Afromontane Rainforests of Ethiopia. 
+A Review 
+TÜRKOĞLU, M., & Hanbay, D. (2019). Plant disease and pest detection using deep learning-based features. Turkish 
+Journal of Electrical Engineering & Computer Sciences, 27(3), 1636-1651. 
+Vassallo-Barco, M., Vives-Garnique, L., Tuesta-Monteza, V., Mejía-Cabrera, H. I., & Toledo, R. Y. (2017). Automatic 
+Detection of Nutritional Deficiencies In Coffee Tree Leaves Through Shape And Texture Descriptors. Journal of 
+Digital Information Management, 15(1). 
+Waller, J. M., Bigger, M., & Hillocks, R. J. (2007). Coffee pests, diseases and their management. CABI. 
+© 2021 JETIR October 2021, Volume 8, Issue 10                                                   www.jetir.org (ISSN-2349-5162) 
+JETIR2110156 
+Journal of Emerging Technologies and Innovative Research (JETIR) www.jetir.org 
+b508 
+ 
+Yamashita, R., Nishio, M., Do, R. K. G., & Togashi, K. (2018). Convolutional neural networks: an overview and 
+application in radiology. Insights into imaging, 9(4), 611-629. 
+Yamashita, R., Nishio, M., Do, R. K. G., & Togashi, K. (2018). Convolutional neural networks: an overview and 
+application in radiology. Insights into imaging, 9(4), 611-629. 
+Yimeru Abnet Kifle “Automatic Coffee Disease and Pest Damage Identification.” Addis Ababa University (2020) 

@@ -1,10 +1,12 @@
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 from sentence_transformers import SentenceTransformer
 import chromadb
 import logging
 import os
-from typing import List
+import hashlib
+from typing import List, Tuple
+import re
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -14,6 +16,7 @@ logger = logging.getLogger(__name__)
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 VECTOR_COLLECTION_NAME = "coffee_disease"
 PERSIST_DIRECTORY = "vector_db"
+EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 # Use CPU for better performance if no GPU
 if DEVICE == "cuda":
@@ -24,308 +27,317 @@ else:
 
 print(f"Using device: {DEVICE}")
 
-class CoffeeRAGChatbot:
-    def __init__(self):
-        self.device = DEVICE
-        self.vector_collection_name = VECTOR_COLLECTION_NAME
-        self.persist_directory = PERSIST_DIRECTORY
-        
-        # Initialize ChromaDB with persistence
-        self.client = chromadb.PersistentClient(path=self.persist_directory)
-        self.collection = self._setup_collection()
-        
-        # Load models
-        self.embed_model = self._load_embedding_model()
-        self.tokenizer, self.llm_model = self._load_llm_model()
-        
-        print("✅ Coffee RAG Chatbot initialized successfully!")
+class EmbeddingHelper:
+    """Helper class for handling embeddings and vector database operations."""
     
-    def _setup_collection(self):
-        """Setup ChromaDB collection with error handling."""
+    def __init__(self, persist_directory: str = PERSIST_DIRECTORY):
+        self.embedder = SentenceTransformer(EMBEDDING_MODEL)
+        self.chroma_client = chromadb.PersistentClient(path=persist_directory)
+        self.collection_name = VECTOR_COLLECTION_NAME
+        
+    def setup_collection(self) -> chromadb.Collection:
+        """Setup or get existing ChromaDB collection."""
         try:
-            # List all available collections
-            collections = self.client.list_collections()
-            collection_names = [col.name for col in collections]
-            logger.info(f"Available collections: {collection_names}")
-            
-            if self.vector_collection_name not in collection_names:
-                logger.error(f"Collection '{self.vector_collection_name}' does not exist.")
-                logger.info(f"Available collections: {collection_names}")
-                logger.info("Please run 'create_vector_db.py' first to create the vector database.")
-                raise ValueError(f"Collection '{self.vector_collection_name}' not found. Available: {collection_names}")
-            
-            # Get the collection
-            collection = self.client.get_collection(name=self.vector_collection_name)
-            
-            # Verify it has data
-            count = collection.count()
-            logger.info(f"Collection '{self.vector_collection_name}' loaded successfully with {count} chunks.")
-            
-            if count == 0:
-                logger.warning("Collection exists but is empty.")
-            
+            # Try to get existing collection first
+            collection = self.chroma_client.get_collection(name=self.collection_name)
+            logger.info(f"Collection '{self.collection_name}' loaded successfully.")
             return collection
-            
-        except Exception as e:
-            logger.error(f"Error setting up collection: {str(e)}")
-            raise
+        except Exception:
+            # Create new collection if it doesn't exist
+            logger.info(f"Creating new collection '{self.collection_name}'...")
+            return self.chroma_client.create_collection(name=self.collection_name)
     
-    def _load_embedding_model(self):
-        """Load the embedding model."""
-        try:
-            model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
-            logger.info("Embedding model loaded successfully.")
-            return model
-        except Exception as e:
-            logger.error(f"Error loading embedding model: {str(e)}")
-            raise
+    def get_embedding(self, texts: List[str]):
+        """Get embeddings for texts."""
+        return self.embedder.encode(texts, convert_to_tensor=True)
     
-    def _load_llm_model(self):
-        """Load the LLM model optimized for CPU."""
-        # Try Phi-3 mini first (better instruction following), fallback to TinyLlama
-        model_name = "microsoft/phi-3-mini-4k-instruct"  # Much better at following instructions
+    def get_text_hash(self, text: str) -> str:
+        """Generate hash for text to use as ID."""
+        return hashlib.md5(text.encode()).hexdigest()
+    
+    def store_embeddings(self, chunks: List[str], metadatas: List[dict] = None):
+        """Store chunks and their embeddings in the vector database."""
+        if not chunks:
+            logger.warning("No chunks to store.")
+            return
         
-        try:
-            logger.info(f"Loading {model_name}...")
-            
-            # Load tokenizer
-            tokenizer = AutoTokenizer.from_pretrained(
-                model_name, 
-                use_fast=True,
-                trust_remote_code=True
-            )
-            
-            # Add padding token if it doesn't exist
-            if tokenizer.pad_token is None:
-                tokenizer.pad_token = tokenizer.eos_token
-            
-            # Load model with CPU optimizations
-            llm_model = AutoModelForCausalLM.from_pretrained(
-                model_name,
-                torch_dtype=torch.float32,
-                device_map=None,
-                low_cpu_mem_usage=True,
-                trust_remote_code=True
-            )
-            
-            # Move to device
-            llm_model = llm_model.to(self.device)
-            
-            # Set to evaluation mode
-            llm_model.eval()
-            
-            logger.info(f"{model_name} loaded successfully.")
-            return tokenizer, llm_model
-            
-        except Exception as e:
-            logger.warning(f"Failed to load {model_name}: {str(e)}")
-            logger.info("Falling back to TinyLlama...")
-            return self._load_fallback_model()
-    
-    def _load_fallback_model(self):
-        """Load TinyLlama as fallback."""
-        model_name = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+        collection = self.setup_collection()
+        embeddings = self.get_embedding(chunks)
         
-        try:
-            logger.info(f"Loading fallback model: {model_name}")
+        # Generate IDs and metadata
+        ids = [self.get_text_hash(chunk) for chunk in chunks]
+        if metadatas is None:
+            metadatas = [{"text": chunk} for chunk in chunks]
+        
+        # Store in batches for better performance
+        batch_size = 100
+        for i in range(0, len(chunks), batch_size):
+            end_idx = min(i + batch_size, len(chunks))
+            batch_ids = ids[i:end_idx]
+            batch_chunks = chunks[i:end_idx]
+            batch_embeddings = embeddings[i:end_idx]
+            batch_metadatas = metadatas[i:end_idx]
             
-            tokenizer = AutoTokenizer.from_pretrained(
-                model_name, 
-                use_fast=True,
-                trust_remote_code=True
+            collection.upsert(
+                embeddings=batch_embeddings.tolist(),
+                documents=batch_chunks,
+                metadatas=batch_metadatas,
+                ids=batch_ids
             )
-            
-            if tokenizer.pad_token is None:
-                tokenizer.pad_token = tokenizer.eos_token
-            
-            llm_model = AutoModelForCausalLM.from_pretrained(
-                model_name,
-                torch_dtype=torch.float32,
-                device_map=None,
-                low_cpu_mem_usage=True,
-                trust_remote_code=True
-            )
-            
-            llm_model = llm_model.to(self.device)
-            llm_model.eval()
-            
-            logger.info("TinyLlama fallback model loaded successfully.")
-            return tokenizer, llm_model
-            
-        except Exception as e:
-            logger.error(f"Fallback model also failed: {str(e)}")
-            raise
+            logger.info(f"Stored batch {i//batch_size + 1}: {len(batch_chunks)} chunks")
     
-    def retrieve_chunks(self, question: str, k: int = 3) -> List[str]:
-        """Retrieve top-k relevant chunks from the vector database."""
+    def get_top_n_results(self, query: str, n: int = 3) -> List[str]:
+        """Retrieve top n relevant chunks for a query."""
         try:
-            # Encode the question
-            q_emb = self.embed_model.encode([question], convert_to_numpy=True)[0]
+            collection = self.setup_collection()
+            query_embedding = self.embedder.encode(query, convert_to_tensor=True)
             
-            # Query the collection
-            results = self.collection.query(
-                query_embeddings=[q_emb.tolist()],
-                n_results=k
+            results = collection.query(
+                query_embeddings=[query_embedding.tolist()],
+                n_results=n
             )
-            
-            chunks = results['documents'][0] if results['documents'] else []
-            logger.info(f"Retrieved {len(chunks)} relevant chunks.")
-            return chunks
-            
+            return results["documents"][0] if results["documents"] else []
         except Exception as e:
-            logger.error(f"Error retrieving chunks: {str(e)}")
-            return ["Error retrieving information. Please try again."]
+            logger.error(f"Error retrieving results: {str(e)}")
+            return []
+
+class RAGModel:
+    """Main RAG model for generating answers."""
     
-    def _create_prompt(self, question: str, context: str) -> str:
-        """Create a simple, clear prompt for better model understanding."""
-        return f"""You are an expert Ethiopian coffee agronomist. Use the context below to answer the question clearly and concisely.
-
-Guidelines:
-- Answer based ONLY on the provided context
-- If the answer is not in the context, say "I don't have enough information about that specific topic."
-- Keep answers focused and informative
-- Use clear, professional language
-
-Context:
+    def __init__(self, model_name: str = "microsoft/phi-3-mini-4k-instruct"):
+        self.device = DEVICE
+        self.model_name = model_name
+        self.tokenizer, self.llm_model = self._load_llm_model()
+        logger.info(f"RAG model initialized with {model_name}")
+    
+    def _load_llm_model(self) -> Tuple[AutoTokenizer, AutoModelForCausalLM]:
+        """Load the LLM model with fallback options."""
+        model_priority_list = [
+            "microsoft/phi-3-mini-4k-instruct",  # Best for instruction following
+            "TinyLlama/TinyLlama-1.1B-Chat-v1.0",  # Good fallback
+            "microsoft/DialoGPT-medium"  # Lightweight fallback
+        ]
+        
+        for model_name in model_priority_list:
+            try:
+                logger.info(f"Attempting to load {model_name}...")
+                
+                tokenizer = AutoTokenizer.from_pretrained(
+                    model_name,
+                    use_fast=True,
+                    trust_remote_code=True
+                )
+                
+                # Add padding token if missing
+                if tokenizer.pad_token is None:
+                    tokenizer.pad_token = tokenizer.eos_token
+                
+                llm_model = AutoModelForCausalLM.from_pretrained(
+                    model_name,
+                    torch_dtype=torch.float32,
+                    device_map=None,
+                    low_cpu_mem_usage=True,
+                    trust_remote_code=True
+                )
+                
+                llm_model = llm_model.to(self.device)
+                llm_model.eval()
+                
+                logger.info(f"Successfully loaded {model_name}")
+                return tokenizer, llm_model
+                
+            except Exception as e:
+                logger.warning(f"Failed to load {model_name}: {str(e)}")
+                continue
+        
+        raise Exception("All model loading attempts failed")
+    
+    def create_prompt(self, question: str, context: str) -> str:
+        """Create an optimized prompt for better answer generation."""
+        return f"""Context:
 {context}
 
 Question: {question}
 
+Instructions: Based on the context above, provide a clear and concise answer. If the information is not in the context, say you don't know.
+
 Answer:"""
     
-    def generate_answer(self, question: str) -> str:
-        """Generate answer using RAG pipeline."""
+    def generate_answer(self, question: str, context: str) -> str:
+        """Generate answer using context and question."""
         try:
-            # Retrieve relevant context
-            chunks = self.retrieve_chunks(question, k=3)
+            prompt = self.create_prompt(question, context)
             
-            if not chunks or "Error retrieving" in chunks[0]:
-                return "I'm sorry, I couldn't retrieve relevant information to answer your question. Please make sure the vector database is properly set up."
-            
-            context = "\n".join(chunks)
-            
-            # Create clean prompt
-            prompt = self._create_prompt(question, context)
-            
-            # Generate response
             with torch.no_grad():
                 inputs = self.tokenizer(
-                    prompt, 
-                    return_tensors="pt", 
-                    truncation=True, 
-                    max_length=2048,  # Increased for longer context
+                    prompt,
+                    return_tensors="pt",
+                    truncation=True,
+                    max_length=2048,
                     padding=True
                 ).to(self.device)
                 
-                # Generate with optimized settings
                 output = self.llm_model.generate(
                     **inputs,
-                    max_new_tokens=256,  # Increased for more detailed answers
+                    max_new_tokens=200,
                     do_sample=True,
-                    top_p=0.90,
+                    top_p=0.9,
                     temperature=0.7,
                     pad_token_id=self.tokenizer.eos_token_id,
-                    repetition_penalty=1.2,  # Increased to reduce repetition
+                    repetition_penalty=1.2,
                     eos_token_id=self.tokenizer.eos_token_id,
                     num_return_sequences=1,
                     early_stopping=True
                 )
                 
-                # Decode the response
                 full_response = self.tokenizer.decode(output[0], skip_special_tokens=True)
-                
-                # Extract only the answer part
-                answer = self._extract_answer(full_response, prompt)
+                answer = self._clean_response(full_response, prompt)
                 
                 return answer
                 
         except Exception as e:
             logger.error(f"Error generating answer: {str(e)}")
-            return "I'm sorry, I encountered an error while processing your question. Please try again."
+            return "I encountered an error while processing your question. Please try again."
     
-    def _extract_answer(self, full_response: str, original_prompt: str) -> str:
-        """Extract just the answer part from the full response."""
-        # Remove the original prompt from the response
+    def _clean_response(self, full_response: str, original_prompt: str) -> str:
+        """Clean and extract the answer from the full response."""
+        # Remove the prompt from response
         if original_prompt in full_response:
             answer = full_response.replace(original_prompt, "").strip()
         else:
             answer = full_response.strip()
         
-        # Clean up the answer - remove any repeated instructions or context
-        lines = answer.split('\n')
-        clean_lines = []
+        # Remove any instruction repetitions
+        clean_answer = re.sub(r'(Context:|Question:|Instructions:).*?Answer:', '', answer, flags=re.DOTALL)
+        clean_answer = clean_answer.strip()
         
-        for line in lines:
-            line = line.strip()
-            # Skip lines that are clearly part of the system prompt or context repetition
-            if not line:
-                continue
-            if any(skip_word in line.lower() for skip_word in ['you are an expert', 'guidelines:', 'context:', 'question:', 'answer based only']):
-                continue
-            clean_lines.append(line)
+        # Take only the first few sentences
+        sentences = re.split(r'[.!?]+', clean_answer)
+        if sentences:
+            clean_answer = '. '.join(sentences[:2]).strip() + '.'
         
-        # Join the clean lines
-        clean_answer = ' '.join(clean_lines).strip()
+        # Final cleanup
+        clean_answer = re.sub(r'\s+', ' ', clean_answer).strip()
         
-        # If we have a reasonably long answer, return it
-        if len(clean_answer) > 10:
-            return clean_answer
+        if not clean_answer or len(clean_answer) < 10:
+            return "I don't have enough information to answer that question based on the available context."
         
-        # If answer is too short or empty, try a different extraction method
-        if original_prompt in full_response:
-            # Get everything after "Answer:"
-            parts = full_response.split("Answer:")
-            if len(parts) > 1:
-                answer_part = parts[-1].strip()
-                # Clean it up
-                answer_part = answer_part.split('\n')[0].strip()  # Take first line after Answer:
-                if answer_part and len(answer_part) > 5:
-                    return answer_part
+        return clean_answer
+
+class CoffeeRAGChatbot:
+    """Main chatbot class integrating embedding helper and RAG model."""
+    
+    def __init__(self):
+        self.device = DEVICE
         
-        return clean_answer if clean_answer else "I don't have enough information to answer that question based on my knowledge."
+        # Initialize components
+        self.embedding_helper = EmbeddingHelper()
+        self.rag_model = RAGModel()
+        
+        logger.info("✅ Coffee RAG Chatbot initialized successfully!")
+    
+    def retrieve_context(self, question: str, top_k: int = 3) -> str:
+        """Retrieve relevant context for the question."""
+        try:
+            chunks = self.embedding_helper.get_top_n_results(question, top_k)
+            if not chunks:
+                return "No relevant information found."
+            
+            return "\n".join(chunks)
+        except Exception as e:
+            logger.error(f"Error retrieving context: {str(e)}")
+            return "Error retrieving information."
+    
+    def generate_answer(self, question: str) -> str:
+        """Generate answer for the question using RAG pipeline."""
+        try:
+            # Retrieve relevant context
+            context = self.retrieve_context(question)
+            
+            if "error" in context.lower() or "no relevant" in context.lower():
+                return "I'm sorry, I couldn't find relevant information to answer your question. Please try rephrasing or ask about Ethiopian coffee diseases."
+            
+            # Generate answer using RAG model
+            answer = self.rag_model.generate_answer(question, context)
+            
+            return answer
+            
+        except Exception as e:
+            logger.error(f"Error in generate_answer: {str(e)}")
+            return "I encountered an error while processing your question. Please try again."
     
     def chat(self):
-        """Start the interactive chat session."""
-        print("\n" + "="*50)
-        print("☕ Ethiopian Coffee RAG Chatbot")
-        print("Type 'exit', 'quit', or 'bye' to end the conversation")
-        print("="*50)
+        """Start interactive chat session."""
+        print("\n" + "="*60)
+        print("☕ Ethiopian Coffee Disease Research Assistant")
+        print("="*60)
+        print("Ask me about Ethiopian coffee diseases, symptoms, treatments,")
+        print("prevention methods, or any related agricultural practices.")
+        print("\nType 'exit', 'quit', or 'bye' to end the conversation")
+        print("="*60)
         
         while True:
             try:
-                user_input = input("\nYou: ").strip()
+                user_input = input("\n🧑 You: ").strip()
                 
                 if user_input.lower() in ["exit", "quit", "bye"]:
-                    print("Bot: Thank you for chatting! Have a great day! ☕")
+                    print("\n🤖 Bot: Thank you for using the Ethiopian Coffee Research Assistant! Have a great day! ☕")
                     break
                 
                 if not user_input:
-                    print("Bot: Please enter a question about Ethiopian coffee diseases.")
+                    print("🤖 Bot: Please enter a question about Ethiopian coffee diseases.")
                     continue
                 
-                print("Bot: Thinking...")
+                print("🤖 Bot: Researching...", end=" ", flush=True)
                 answer = self.generate_answer(user_input)
-                print(f"Bot: {answer}")
+                print(f"\r🤖 Bot: {answer}")
                 
             except KeyboardInterrupt:
-                print("\n\nBot: Chat session ended. Goodbye!")
+                print("\n\n🤖 Bot: Session ended. Goodbye!")
                 break
             except Exception as e:
-                print(f"Bot: Sorry, I encountered an error. Please try again.")
+                print(f"\n🤖 Bot: Sorry, I encountered an error. Please try again.")
                 logger.error(f"Chat error: {str(e)}")
+
+def check_vector_database() -> bool:
+    """Check if vector database exists and has data."""
+    try:
+        embedding_helper = EmbeddingHelper()
+        collection = embedding_helper.setup_collection()
+        count = collection.count()
+        
+        if count > 0:
+            logger.info(f"Vector database found with {count} chunks.")
+            return True
+        else:
+            logger.warning("Vector database exists but is empty.")
+            return False
+    except Exception as e:
+        logger.error(f"Error checking vector database: {str(e)}")
+        return False
 
 def main():
     """Main function to run the chatbot."""
+    print("🚀 Initializing Ethiopian Coffee RAG Chatbot...")
+    
+    # Check if vector database exists
+    if not check_vector_database():
+        print("❌ Vector database not found or empty!")
+        print("Please make sure to:")
+        print("1. Run 'create_vector_db.py' first to create the vector database")
+        print("2. Ensure you have text chunks in 'data/chunks/' folder")
+        print("3. Verify the vector database was created successfully")
+        return
+    
     try:
+        # Initialize and start chatbot
         chatbot = CoffeeRAGChatbot()
         chatbot.chat()
+        
     except Exception as e:
         logger.error(f"Failed to initialize chatbot: {str(e)}")
-        print("❌ Failed to initialize the chatbot. Please make sure:")
-        print("   1. The vector database collection exists")
-        print("   2. You have run 'create_vector_db.py' first")
-        print("   3. You have a stable internet connection for model download")
-        print(f"   Error details: {str(e)}")
+        print("❌ Failed to initialize the chatbot. Error details:")
+        print(f"   {str(e)}")
 
 if __name__ == "__main__":
     main()

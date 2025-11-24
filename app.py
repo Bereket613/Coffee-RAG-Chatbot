@@ -150,74 +150,59 @@ Answer:"""
 # Initialize the chatbot
 chatbot = CoffeeRAGChatbot()
 
-def chat_function(message, history):
-    """Function that handles the chat interaction"""
-    if not chatbot.collection:
-        return "❌ Error: Vector database not found. Please run 'create_vector_db.py' first to create the knowledge base."
+def detect_gradio_version():
+    """Detect which Gradio version features are available"""
+    version_info = {
+        'has_theme_in_blocks': False,
+        'has_messages_type': False,
+        'has_show_copy_button': False
+    }
     
-    # Add typing animation effect
-    for i in range(3):
-        time.sleep(0.1)
-        yield "🤖 Researching" + "." * (i + 1)
+    # Test for theme in Blocks
+    try:
+        with gr.Blocks(theme=gr.themes.Soft()):
+            pass
+        version_info['has_theme_in_blocks'] = True
+    except:
+        pass
     
-    # Generate the actual response
-    response = chatbot.generate_answer(message)
-    yield response
+    # Test for messages type
+    try:
+        gr.Chatbot(type="messages")
+        version_info['has_messages_type'] = True
+    except:
+        pass
+    
+    # Test for show_copy_button
+    try:
+        gr.Chatbot(show_copy_button=True)
+        version_info['has_show_copy_button'] = True
+    except:
+        pass
+    
+    print(f"📊 Detected Gradio features: {version_info}")
+    return version_info
+
+# Detect Gradio version
+gradio_features = detect_gradio_version()
 
 def create_gradio_interface():
-    """Create the Gradio interface"""
+    """Create the Gradio interface that works with ANY version"""
     
-    # Custom CSS for better styling
-    custom_css = """
-    .gradio-container {
-        background: linear-gradient(135deg, #f5f1e6 0%, #e8dfca 100%);
-        font-family: 'Arial', sans-serif;
-    }
-    .chatbot {
-        background-color: #ffffff !important;
-        border-radius: 15px !important;
-        border: 2px solid #8B4513 !important;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    .textbox textarea {
-        border-radius: 10px !important;
-        border: 2px solid #8B4513 !important;
-        font-size: 14px;
-    }
-    .button-primary {
-        background: #8B4513 !important;
-        border: none !important;
-        color: white !important;
-        border-radius: 10px !important;
-        font-weight: bold;
-    }
-    .button-primary:hover {
-        background: #654321 !important;
-    }
-    .button-secondary {
-        background: #A0522D !important;
-        border: none !important;
-        color: white !important;
-        border-radius: 10px !important;
-    }
-    .examples {
-        background: #f8f4e9 !important;
-        border-radius: 10px !important;
-        border: 1px solid #d4b896 !important;
-    }
-    """
+    # Universal Blocks creation that works with all versions
+    blocks_kwargs = {"title": "☕ Ethiopian Coffee Disease Assistant"}
     
-    with gr.Blocks(
-        title="☕ Ethiopian Coffee Disease Assistant",
-        theme=gr.themes.Soft(),  # Removed invalid color parameters
-        css=custom_css
-    ) as demo:
+    # Only add theme if supported
+    if gradio_features['has_theme_in_blocks']:
+        blocks_kwargs["theme"] = gr.themes.Soft()
+    
+    with gr.Blocks(**blocks_kwargs) as demo:
         
-        # Header
+        # Header with inline styling
         gr.Markdown(
             """
             <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #8B4513, #A0522D); 
-                       border-radius: 15px; color: white; margin-bottom: 20px;">
+                       border-radius: 15px; color: white; margin-bottom: 20px; font-family: Arial, sans-serif;">
                 <h1 style="margin: 0;">☕ Ethiopian Coffee Disease Research Assistant</h1>
                 <h3 style="margin: 10px 0 0 0; font-weight: normal;">Your AI companion for Ethiopian coffee disease knowledge</h3>
             </div>
@@ -227,98 +212,140 @@ def create_gradio_interface():
         with gr.Row():
             # Main chat area
             with gr.Column(scale=3):
-                chatbot_interface = gr.Chatbot(
-                    value=[[None, "Hello! I'm your Ethiopian Coffee Disease Assistant. Ask me about coffee diseases, symptoms, treatments, or prevention methods! ☕"]],
-                    height=500,
-                    show_copy_button=True,
-                    placeholder="Chat with your coffee disease expert...",
-                    elem_classes="chatbot"
-                )
+                # Universal Chatbot creation
+                chatbot_kwargs = {
+                    "value": [],
+                    "label": "Coffee Disease Chat",
+                    "height": 500
+                }
+                
+                # Only add advanced features if supported
+                if gradio_features['has_messages_type']:
+                    chatbot_kwargs["type"] = "messages"
+                    chatbot_kwargs["placeholder"] = "Chat with your coffee disease expert..."
+                
+                if gradio_features['has_show_copy_button']:
+                    chatbot_kwargs["show_copy_button"] = True
+                
+                chatbot_interface = gr.Chatbot(**chatbot_kwargs)
                 
                 with gr.Row():
                     msg = gr.Textbox(
-                        label="Type your question",
+                        label="Type your question about Ethiopian coffee diseases",
                         placeholder="e.g., What is coffee leaf rust? How to prevent coffee berry disease?",
                         scale=4,
-                        container=False,
                         lines=2
                     )
-                    send_btn = gr.Button("Send 📤", scale=1, variant="primary")
+                    send_btn = gr.Button("Send", scale=1, variant="primary")
                 
                 with gr.Row():
-                    clear_btn = gr.ClearButton([msg, chatbot_interface], variant="secondary")
-                    restart_btn = gr.Button("🔄 Restart Chat", variant="secondary")
+                    clear_btn = gr.Button("Clear Chat", variant="secondary")
+                    restart_btn = gr.Button("Restart", variant="secondary")
             
             # Sidebar with information and examples
             with gr.Column(scale=1):
-                with gr.Group():
-                    gr.Markdown("### 💡 About This Assistant")
-                    gr.Markdown("""
-                    <div style="background: #f8f4e9; padding: 15px; border-radius: 10px; border-left: 4px solid #8B4513;">
-                    This AI assistant specializes in Ethiopian coffee diseases and can help you with:
-                    
-                    • **Disease Identification**
-                    • **Symptoms & Causes**  
-                    • **Treatment Methods**
-                    • **Prevention Strategies**
-                    • **Agricultural Best Practices**
-                    
-                    <em>Powered by RAG technology with specialized knowledge base</em>
-                    </div>
-                    """)
+                gr.Markdown("### 💡 About This Assistant")
+                gr.Markdown("""
+                <div style="background: #f8f4e9; padding: 15px; border-radius: 10px; border-left: 4px solid #8B4513;">
+                This AI assistant specializes in Ethiopian coffee diseases and can help you with:
                 
-                with gr.Group():
-                    gr.Markdown("### 🔍 Sample Questions")
-                    examples = gr.Examples(
-                        examples=[
-                            "What is coffee leaf rust and how does it affect plants?",
-                            "How can I prevent coffee berry disease naturally?",
-                            "What are the main symptoms of coffee wilt disease?",
-                            "Best organic treatments for coffee diseases",
-                            "How to identify different coffee leaf diseases?",
-                            "What causes coffee leaf spot and how to treat it?"
-                        ],
-                        inputs=msg,
-                        label="Click any question to try:",
-                        elem_classes="examples"
-                    )
+                • **Disease Identification**
+                • **Symptoms & Causes**  
+                • **Treatment Methods**
+                • **Prevention Strategies**
+                • **Agricultural Best Practices**
                 
-                with gr.Group():
-                    gr.Markdown("### 📊 System Information")
-                    status = "✅ Ready" if chatbot.collection else "❌ Setup Required"
-                    chunk_count = chatbot.collection.count() if chatbot.collection else 0
-                    gr.Markdown(f"""
-                    <div style="background: #f0f8ff; padding: 15px; border-radius: 10px; border-left: 4px solid #4a90e2;">
-                    • **Device**: {DEVICE.upper()}<br>
-                    • **AI Model**: DialoGPT-medium<br>
-                    • **Knowledge Base**: {chunk_count} documents<br>
-                    • **Status**: {status}
-                    </div>
-                    """)
+                <em>Powered by RAG technology with specialized knowledge base</em>
+                </div>
+                """)
+                
+                gr.Markdown("### 🔍 Sample Questions")
+                examples = gr.Examples(
+                    examples=[
+                        "What is coffee leaf rust and how does it affect plants?",
+                        "How can I prevent coffee berry disease naturally?",
+                        "What are the main symptoms of coffee wilt disease?",
+                        "Best organic treatments for coffee diseases",
+                        "How to identify different coffee leaf diseases?",
+                        "What causes coffee leaf spot and how to treat it?"
+                    ],
+                    inputs=msg,
+                    label="Click any question to try:"
+                )
+                
+                gr.Markdown("### 📊 System Information")
+                status = "✅ Ready" if chatbot.collection else "❌ Setup Required"
+                chunk_count = chatbot.collection.count() if chatbot.collection else 0
+                gr.Markdown(f"""
+                <div style="background: #f0f8ff; padding: 15px; border-radius: 10px; border-left: 4px solid #4a90e2;">
+                • **Device**: {DEVICE.upper()}<br>
+                • **AI Model**: DialoGPT-medium<br>
+                • **Knowledge Base**: {chunk_count} documents<br>
+                • **Status**: {status}
+                </div>
+                """)
         
-        # Event handlers
+        # UNIVERSAL CHAT HANDLER - works with all Gradio versions
         def respond(message, chat_history):
+            """Handle user message - universal compatibility"""
             if not message.strip():
                 return chat_history
             
-            # Add user message
-            chat_history.append([message, None])
+            if not chatbot.collection:
+                # Handle both message formats
+                try:
+                    # Try new format first
+                    if gradio_features['has_messages_type']:
+                        chat_history.append({"role": "user", "content": message})
+                        chat_history.append({"role": "assistant", "content": "❌ Error: Please run 'create_vector_db.py' first."})
+                    else:
+                        # Fallback to old format
+                        chat_history.append((message, "❌ Error: Please run 'create_vector_db.py' first."))
+                except:
+                    # Ultimate fallback
+                    chat_history.append((message, "❌ Error: Please run 'create_vector_db.py' first."))
+                return chat_history
             
-            # Generate response with streaming effect
-            response = ""
-            for chunk in chat_function(message, chat_history):
-                if "Researching" in chunk:
-                    chat_history[-1][1] = chunk
-                    yield chat_history
+            # Show typing indicator
+            try:
+                if gradio_features['has_messages_type']:
+                    chat_history.append({"role": "user", "content": message})
+                    chat_history.append({"role": "assistant", "content": "🤖 Researching..."})
                 else:
-                    response = chunk
+                    chat_history.append((message, "🤖 Researching..."))
+            except:
+                chat_history.append((message, "🤖 Researching..."))
             
-            # Final response
-            chat_history[-1][1] = response
+            yield chat_history
+            time.sleep(1)
+            
+            # Generate actual response
+            response = chatbot.generate_answer(message)
+            
+            # Update with final response
+            try:
+                if gradio_features['has_messages_type']:
+                    chat_history[-1] = {"role": "assistant", "content": response}
+                else:
+                    chat_history[-1] = (message, response)
+            except:
+                chat_history[-1] = (message, response)
+            
             yield chat_history
         
         def restart_chat():
-            return [[None, "Hello! I'm your Ethiopian Coffee Disease Assistant. Ask me about coffee diseases, symptoms, treatments, or prevention methods! ☕"]]
+            """Restart with initial greeting - universal compatibility"""
+            try:
+                if gradio_features['has_messages_type']:
+                    return [{"role": "assistant", "content": "Hello! I'm your Ethiopian Coffee Disease Assistant. Ask me about coffee diseases, symptoms, treatments, or prevention methods! ☕"}]
+                else:
+                    return [("🤖", "Hello! I'm your Ethiopian Coffee Disease Assistant. Ask me about coffee diseases, symptoms, treatments, or prevention methods! ☕")]
+            except:
+                return [("🤖", "Hello! I'm your Ethiopian Coffee Disease Assistant. Ask me about coffee diseases, symptoms, treatments, or prevention methods! ☕")]
+        
+        def clear_chat():
+            """Clear the chat history"""
+            return []
         
         # Connect the interface
         msg.submit(
@@ -334,8 +361,11 @@ def create_gradio_interface():
         ).then(lambda: "", outputs=[msg])
         
         # Clear and restart functions
-        clear_btn.click(lambda: "", outputs=[msg])
+        clear_btn.click(clear_chat, outputs=[chatbot_interface])
         restart_btn.click(restart_chat, outputs=[chatbot_interface])
+        
+        # Add initial greeting when the app starts
+        demo.load(restart_chat, outputs=[chatbot_interface])
     
     return demo
 
@@ -353,10 +383,20 @@ if __name__ == "__main__":
     print("📱 Access the chatbot at: http://localhost:7860")
     print("🌐 For network access, use your IP address instead of localhost")
     
-    demo.launch(
-        server_name="0.0.0.0",  # Accessible from other devices
-        server_port=7860,        # Default Gradio port
-        share=False,             # Set to True for public link
-        show_error=True,
-        inbrowser=True          # Open in browser automatically
-    )
+    # Universal launch that works with all versions
+    launch_kwargs = {
+        "server_name": "0.0.0.0",
+        "server_port": 7860,
+        "share": False,
+        "show_error": True,
+        "inbrowser": True
+    }
+    
+    # Only add theme to launch if Blocks doesn't support it
+    if not gradio_features['has_theme_in_blocks']:
+        try:
+            launch_kwargs["theme"] = gr.themes.Soft()
+        except:
+            pass
+    
+    demo.launch(**launch_kwargs)
